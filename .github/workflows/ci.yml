@@ -5,6 +5,9 @@ on:
     types: [opened, synchronize]
     branches:
       - main
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
 
 jobs:
   go-test:
