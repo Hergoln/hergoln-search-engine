@@ -1,6 +1,3 @@
-> [!IMPORTANT]
-> This 
-
 Processes to cover based on [this articles][1]:
 1. Crawling **the web**
   1. Be smart about it:
