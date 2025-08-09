@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 )
 
 var (
@@ -33,5 +34,15 @@ func main() {
 }
 
 func gatherHRefs(data []byte) []string {
-	return nil
+	datas := string(data)
+
+	splits := strings.Split(datas, "href=")
+	splits = splits[1:]
+	for i, e := range splits {
+		e = e[1:]
+		e = e[:strings.Index(e, "\"")]
+		splits[i] = e
+	}
+
+	return splits
 }
