@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"os"
 	"testing"
 )
@@ -19,7 +20,8 @@ func TestGatherHRefs(t *testing.T) {
 	t.Run("Analyze html file and return 6 hrefs", func(t *testing.T) {
 		path := "/Better_Motherfucking_Website.html"
 		data := readFile(path)
-		hrefs := gatherHRefs(data)
+		reader := bytes.NewReader(data)
+		hrefs, _ := gatherHRefs(reader)
 		if len(hrefs) != 6 {
 			t.Errorf("From '%s' returned '%d' number of refs, wanted '%d'", path, len(hrefs), 6)
 		}

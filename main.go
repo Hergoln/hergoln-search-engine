@@ -1,10 +1,13 @@
 package main
 
 import (
+	"bytes"
 	"flag"
 	"fmt"
+	"io"
 	"os"
-	"strings"
+
+	"golang.org/x/net/html"
 )
 
 var (
@@ -28,21 +31,30 @@ func main() {
 	data, err := os.ReadFile(*path)
 	check(err)
 
-	hrefs := gatherHRefs(data)
+	reader := bytes.NewReader(data)
+	hrefs, _ := gatherHRefs(reader)
 
 	fmt.Println(hrefs)
 }
 
-func gatherHRefs(data []byte) []string {
-	datas := string(data)
+func gatherHRefs(reader io.Reader) ([]string, error) {
+	tokenizer := html.NewTokenizer(reader)
 
-	splits := strings.Split(datas, "href=")
-	splits = splits[1:]
-	for i, e := range splits {
-		e = e[1:]
-		e = e[:strings.Index(e, "\"")]
-		splits[i] = e
+	var refs []string
+	for {
+		tokenType := tokenizer.Next()
+
+		switch tokenType {
+		case html.ErrorToken:
+			return refs, nil
+		case html.StartTagToken, html.SelfClosingTagToken:
+			token := tokenizer.Token()
+
+			for _, attr := range token.Attr {
+				if attr.Key == "href" {
+					refs = append(refs, attr.Val)
+				}
+			}
+		}
 	}
-
-	return splits
 }
