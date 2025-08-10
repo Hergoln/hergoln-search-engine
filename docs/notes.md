@@ -21,4 +21,9 @@ Processes to cover based on [this articles][1]:
 Articles:
 * [How google search works][1]
 
+Gathering urls from page:
+There is a go open source tool that gather all links from page, I can base my implementation on that.
+https://github.com/trap-bytes/gourlex
+Shout out to [trap-bytes](https://github.com/trap-bytes) as creator of the gourlex tool
+
 [1]: <https://developers.google.com/search/docs/fundamentals/how-search-works> "How google search works article by google"
