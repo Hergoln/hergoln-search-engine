@@ -1,4 +1,4 @@
-Processes to cover based on [this articles][1]:
+# Processes to cover based on [this articles][1]:
 1. Crawling **the web**
     1. Be smart about it:
         * 500 HTTP errors mean service is overloaded
@@ -17,5 +17,18 @@ Processes to cover based on [this articles][1]:
 
 Articles:
 * [How google search works][1]
+
+# Gathering urls from page:
+There is a go open source tool that gather all links from page, I can base my implementation on that.
+https://github.com/trap-bytes/gourlex
+Shout out to [trap-bytes](https://github.com/trap-bytes) as creator of the gourlex tool
+
+During the implementation pay special attention to:
+1. how to handle links in SPAs (Single Page Applications) as mostly generate their content on the fly and reading the page returned from simple http call might be mostly script
+2. how links can be represented
+    1. hrefs
+    2. relative links (links with not full path?)
+    3. others (?)
+3. others (?)
 
 [1]: <https://developers.google.com/search/docs/fundamentals/how-search-works> "How google search works article by google"
