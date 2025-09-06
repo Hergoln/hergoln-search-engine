@@ -1,4 +1,4 @@
-package main
+package processing
 
 import (
 	"io"
@@ -6,7 +6,7 @@ import (
 	"golang.org/x/net/html"
 )
 
-func gatherHRefs(reader io.Reader) ([]string, error) {
+func GatherHRefs(reader io.Reader) ([]string, error) {
 	tokenizer := html.NewTokenizer(reader)
 
 	var refs []string
@@ -25,11 +25,5 @@ func gatherHRefs(reader io.Reader) ([]string, error) {
 				}
 			}
 		}
-	}
-}
-
-func check(e error) {
-	if e != nil {
-		panic(e)
 	}
 }

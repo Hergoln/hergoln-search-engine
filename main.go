@@ -1,11 +1,9 @@
 package main
 
 import (
-	"bytes"
 	"flag"
-	"fmt"
+	"hergoln-search-engine/internal/processing"
 	"log"
-	"os"
 	"slices"
 )
 
@@ -30,21 +28,11 @@ func main() {
 
 	if *mode == "single_file" {
 		log.Printf("Starting 'single_file' mode, reading hrefs from file")
-		runSingleFileScan()
+		processing.RunSingleFileScan(path)
 	}
 
 	if *mode == "server" {
 		log.Printf("Starting 'server' mode.")
+
 	}
-}
-
-func runSingleFileScan() {
-	fmt.Println(*path)
-	data, err := os.ReadFile(*path)
-	check(err)
-
-	reader := bytes.NewReader(data)
-	hrefs, _ := gatherHRefs(reader)
-
-	fmt.Println(hrefs)
 }
