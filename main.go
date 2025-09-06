@@ -4,29 +4,41 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
-	"io"
+	"log"
 	"os"
-
-	"golang.org/x/net/html"
+	"slices"
 )
 
 var (
-	path *string
+	mode  *string
+	path  *string
+	modes = []string{"single_file", "server"}
 )
 
 func parseInput() {
+	mode = flag.String("mode", "", "mode of operation")
 	path = flag.String("path", "", "path to html file to read")
 	flag.Parse()
 }
 
-func check(e error) {
-	if e != nil {
-		panic(e)
+func main() {
+	parseInput()
+
+	if !slices.Contains(modes, *mode) {
+		log.Printf("Mode '%s' is not in allowed modes (%v)\n", *mode, modes)
+	}
+
+	if *mode == "single_file" {
+		log.Printf("Starting 'single_file' mode, reading hrefs from file")
+		runSingleFileScan()
+	}
+
+	if *mode == "server" {
+		log.Printf("Starting 'server' mode.")
 	}
 }
 
-func main() {
-	parseInput()
+func runSingleFileScan() {
 	fmt.Println(*path)
 	data, err := os.ReadFile(*path)
 	check(err)
@@ -35,26 +47,4 @@ func main() {
 	hrefs, _ := gatherHRefs(reader)
 
 	fmt.Println(hrefs)
-}
-
-func gatherHRefs(reader io.Reader) ([]string, error) {
-	tokenizer := html.NewTokenizer(reader)
-
-	var refs []string
-	for {
-		tokenType := tokenizer.Next()
-
-		switch tokenType {
-		case html.ErrorToken:
-			return refs, nil
-		case html.StartTagToken, html.SelfClosingTagToken:
-			token := tokenizer.Token()
-
-			for _, attr := range token.Attr {
-				if attr.Key == "href" {
-					refs = append(refs, attr.Val)
-				}
-			}
-		}
-	}
 }
