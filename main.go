@@ -32,7 +32,12 @@ func main() {
 	}
 
 	if *mode == "server" {
-		log.Printf("Starting 'server' mode.")
+		log.Printf("Starting http 'server' mode...")
+		RunServer()
+	}
 
+	if *mode == "client" {
+		log.Printf("Starting http 'client' mode...")
+		RunClient()
 	}
 }
