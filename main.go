@@ -1,60 +1,49 @@
 package main
 
 import (
-	"bytes"
 	"flag"
 	"fmt"
-	"io"
-	"os"
-
-	"golang.org/x/net/html"
+	"hergoln-search-engine/internal/processing"
+	"log"
+	"slices"
 )
 
 var (
-	path *string
+	mode  *string
+	path  *string
+	modes = []string{"single_file", "server"}
 )
 
 func parseInput() {
+	mode = flag.String("mode", "", "switches mode of operation ('server', 'client')")
 	path = flag.String("path", "", "path to html file to read")
-	flag.Parse()
-}
 
-func check(e error) {
-	if e != nil {
-		panic(e)
+	flag.CommandLine.Usage = func() {
+		fmt.Printf("This is main script of hergoln-simple-search search engine project. Right now you can either start a server mode which listens and serves on default addrs and port or run client mode which does nothing right now.\n\n")
+		flag.PrintDefaults()
 	}
+	flag.Parse()
 }
 
 func main() {
 	parseInput()
-	fmt.Println(*path)
-	data, err := os.ReadFile(*path)
-	check(err)
 
-	reader := bytes.NewReader(data)
-	hrefs, _ := gatherHRefs(reader)
+	if !slices.Contains(modes, *mode) {
+		log.Printf("Mode '%s' is not in allowed modes (%v)\n", *mode, modes)
+	}
 
-	fmt.Println(hrefs)
-}
+	if *mode == "single_file" {
+		log.Printf("Starting 'single_file' mode, reading hrefs from file")
+		processing.RunSingleFileScan(path)
+	}
 
-func gatherHRefs(reader io.Reader) ([]string, error) {
-	tokenizer := html.NewTokenizer(reader)
+	if *mode == "server" {
+		log.Printf("Setting up http 'server'...")
+		RunServer()
+	}
 
-	var refs []string
-	for {
-		tokenType := tokenizer.Next()
-
-		switch tokenType {
-		case html.ErrorToken:
-			return refs, nil
-		case html.StartTagToken, html.SelfClosingTagToken:
-			token := tokenizer.Token()
-
-			for _, attr := range token.Attr {
-				if attr.Key == "href" {
-					refs = append(refs, attr.Val)
-				}
-			}
-		}
+	if *mode == "client" {
+		log.Printf("Setting up http 'client'...")
+		RunClient()
 	}
 }
