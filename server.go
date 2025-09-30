@@ -23,17 +23,20 @@ func getHealthCheck(writer http.ResponseWriter, r *http.Request) {
 	io.WriteString(writer, "Hello, HTTP world!\n")
 }
 
-func prepareHandlers() {
-	http.HandleFunc("/", getRoot)
-	http.HandleFunc("/hello", getHealthCheck)
+func prepareMux() http.Handler {
+	mux := http.NewServeMux()
+
+	mux.HandleFunc("/", getRoot)
+	mux.HandleFunc("/hello", getHealthCheck)
+
+	return mux
 }
 
 func RunServer() {
-	prepareHandlers()
-
-	log.Println("Server started...")
-
-	err := http.ListenAndServe(":3333", nil)
+	mux := prepareMux()
+	host := DEFAULT_ADDR + ":3333"
+	log.Printf("Server started at '%s' address...\n", host)
+	err := http.ListenAndServe(host, mux)
 
 	if errors.Is(err, http.ErrServerClosed) {
 		log.Println("Server closed.")
