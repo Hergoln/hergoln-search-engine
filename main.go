@@ -19,7 +19,7 @@ func parseInput() {
 	path = flag.String("path", "", "path to html file to read")
 
 	flag.CommandLine.Usage = func() {
-		fmt.Println("This is main script of hergoln-simple-search search engine project. Right now you can either start a server mode which listens and serves on default addrs and port or run client mode which does nothing right now.\n")
+		fmt.Printf("This is main script of hergoln-simple-search search engine project. Right now you can either start a server mode which listens and serves on default addrs and port or run client mode which does nothing right now.\n\n")
 		flag.PrintDefaults()
 	}
 	flag.Parse()
