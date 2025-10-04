@@ -1,47 +1,84 @@
 package main
 
 import (
+	"context"
 	"errors"
-	"io"
+	"hergoln-search-engine/internal/server"
 	"log"
+	"net"
 	"net/http"
 )
 
 const (
 	DEFAULT_PORT = "7"
-	DEFAULT_ADDR = "127.0.0.1"
-	DEFAULT_HOST = "127.0.0.1:7"
+	LOCAL_ADDR   = "127.0.0.1"
+	PUBLIC_PORT  = "3333"
+	ADMIN_PORT   = "4444"
 )
 
-func getRoot(writer http.ResponseWriter, r *http.Request) {
-	log.Println("Root request")
-	io.WriteString(writer, "My first http reponse in this project...")
+func runPublicServer(baseCtx context.Context, cancelCtx context.CancelFunc) {
+	mux := server.PrepareStdMux()
+	addr := LOCAL_ADDR + ":" + PUBLIC_PORT
+
+	publicServer := &http.Server{
+		Addr:    addr,
+		Handler: mux,
+		BaseContext: func(listener net.Listener) context.Context {
+			baseCtx = context.WithValue(baseCtx, server.KEY_SERVER_ADDR, listener.Addr().String())
+			return baseCtx
+		},
+	}
+
+	go func() {
+		log.Printf("Starting public server at '%s' address ...\n", addr)
+		err := publicServer.ListenAndServe()
+
+		if errors.Is(err, http.ErrServerClosed) {
+			log.Println("Server closed.")
+			return
+		} else if err != nil {
+			log.Printf("Socket could not be created at '%s' host\n%s", addr, err)
+			return
+		}
+
+		cancelCtx()
+	}()
 }
 
-func getHealthCheck(writer http.ResponseWriter, r *http.Request) {
-	log.Println("Healthcheck request")
-	io.WriteString(writer, "Hello, HTTP world!\n")
-}
+func runAdminServer(baseCtx context.Context, cancelCtx context.CancelFunc) {
+	mux := server.PrepareStdMux()
+	addr := LOCAL_ADDR + ":" + ADMIN_PORT
 
-func prepareMux() http.Handler {
-	mux := http.NewServeMux()
+	adminServer := &http.Server{
+		Addr:    addr,
+		Handler: mux,
+		BaseContext: func(listener net.Listener) context.Context {
+			baseCtx = context.WithValue(baseCtx, server.KEY_SERVER_ADDR, listener.Addr().String())
+			return baseCtx
+		},
+	}
 
-	mux.HandleFunc("/", getRoot)
-	mux.HandleFunc("/hello", getHealthCheck)
+	go func() {
+		log.Printf("Starting admin server at '%s' address ...\n", addr)
+		err := adminServer.ListenAndServe()
 
-	return mux
+		if errors.Is(err, http.ErrServerClosed) {
+			log.Println("Server closed.")
+			return
+		} else if err != nil {
+			log.Printf("Socket could not be created at '%s' host\n%s", addr, err)
+			return
+		}
+
+		cancelCtx()
+	}()
 }
 
 func RunServer() {
-	mux := prepareMux()
-	host := DEFAULT_ADDR + ":3333"
-	log.Printf("Server started at '%s' address...\n", host)
-	err := http.ListenAndServe(host, mux)
+	ctx, cancelCtx := context.WithCancel(context.Background()) // Background context is empty parent context
 
-	if errors.Is(err, http.ErrServerClosed) {
-		log.Println("Server closed.")
-	} else if err != nil {
-		log.Printf("Socket could not be created in local host at '%s'\n", DEFAULT_HOST)
-		return
-	}
+	runPublicServer(ctx, cancelCtx)
+	runAdminServer(ctx, cancelCtx)
+
+	<-ctx.Done()
 }
